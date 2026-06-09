@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>AimBrawlClicker v0.8.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root { --primary: #00c6ff; --bg: #0f172a; --card: #1e293b; --admin: #ff00ff; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; user-select: none; }
+.card { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+.admin-panel { display: none; background: #332033; padding: 20px; border: 2px solid var(--admin); margin-bottom: 20px; border-radius: 15px; }
+.drop-box { border: 2px solid #fbbf24; padding: 15px; border-radius: 15px; cursor: pointer; margin-top: 10px; background: rgba(251, 191, 36, 0.1); }
+button { padding: 10px; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <span>AimBrawl Clicker v0.8.1</span>
+    <button onclick="document.getElementById('adminPanel').style.display='block'">DEV PANEL</button>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+    <h3>DEVIL PANEL</h3>
+    <button onclick="state.coins+=50000; updateUI()">+50к Монет</button>
+    <button onclick="state.dailyDrops=5; updateUI()">Дать 5 дропов</button>
+    <button onclick="document.getElementById('adminPanel').style.display='none'">ЗАКРЫТЬ</button>
+</div>
+
+<div class="card">
+    <h2 id="coinsDisplay">Монеты: 0</h2>
+    <h2 id="crystalsDisplay">Кристаллы: 0</h2>
+    <div id="dropSection" class="drop-box" onclick="openDrop()">
+        <h3>Старрдропы: <span id="dropCount">0</span>/5</h3>
+        <p>Нажми, чтобы открыть!</p>
+    </div>
+</div>
+
+<button id="clickBtn" onclick="doClick()" style="width:100%; height:100px; font-size:20px; background:var(--primary);">КЛИКАТЬ</button>
+
+<script>
+let state = JSON.parse(localStorage.getItem('abc_data')) || {
+    coins: 0, crystals: 0, power: 1, clicks: 0, dailyDrops: 0, totalClicksToday: 0, cooldownUntil: 0, currentDelay: 1000
+};
+
+function save() { localStorage.setItem('abc_data', JSON.stringify(state)); }
+
+function updateUI() {
+    document.getElementById('coinsDisplay').innerText = `Монеты: ${Math.floor(state.coins)}`;
+    document.getElementById('crystalsDisplay').innerText = `Кристаллы: ${state.crystals}`;
+    document.getElementById('dropCount').innerText = state.dailyDrops;
+    save();
+}
+
+function doClick() {
+    if (Date.now() < state.cooldownUntil) return;
+    
+    state.coins += state.power;
+    state.clicks++;
+    state.totalClicksToday++;
+    state.cooldownUntil = Date.now() + state.currentDelay;
+    
+    if (state.totalClicksToday >= 100 && state.dailyDrops < 5) {
+        state.dailyDrops++;
+        state.totalClicksToday -= 100;
+        alert("Вы получили Старрдроп!");
+    }
+    updateUI();
+}
+
+function openDrop() {
+    if (state.dailyDrops <= 0) return alert("Нет доступных дропов!");
+    
+    const roll = Math.random() * 100;
+    let reward = "";
+    
+    if (roll < 0.1) { // УЛЬТРА 0.1%
+        const sub = Math.random();
+        if (sub < 0.7) { state.coins += 100000; reward = "УЛЬТРА: 100к монет!"; }
+        else if (sub < 0.95) { state.power += 25; reward = "УЛЬТРА: +25 Силы!"; }
+        else { state.crystals += 150; reward = "УЛЬТРА: 150 Кристаллов!"; }
+    } else if (roll < 2.1) { // Легендарный 2%
+        const sub = Math.random();
+        if (sub < 0.79) { state.coins += Math.floor(Math.random()*(20000)+5000); reward = "Легендарный: Монеты!"; }
+        else if (sub < 0.98) { state.power += 10; reward = "Легендарный: +10 Силы!"; }
+        else { state.crystals += 80; reward = "Легендарный: 80 Кристаллов!"; }
+    } else if (roll < 11.1) { // Мифический 9%
+        const sub = Math.random();
+        if (sub < 0.84) { state.coins += Math.floor(Math.random()*(2000)+1000); reward = "Мифический: Монеты!"; }
+        else if (sub < 0.99) { state.power += 5; reward = "Мифический: +5 Силы!"; }
+        else { state.crystals += 30; reward = "Мифический: 30 Кристаллов!"; }
+    } else if (roll < 25.1) { // Эпический 14%
+        state.coins += Math.floor(Math.random()*(800)+200); reward = "Эпический: Монеты!";
+    } else if (roll < 50.1) { // Сверхредкий 25%
+        state.coins += Math.floor(Math.random()*(75)+25); reward = "Сверхредкий: Монеты!";
+    } else { // Редкий 50%
+        state.coins += Math.floor(Math.random()*(15)+5); reward = "Редкий: Монеты!";
+    }
+    
+    state.dailyDrops--;
+    alert("Результат дропа: " + reward);
+    updateUI();
+}
+
+updateUI();
+</script>
+</body>
+</html>
