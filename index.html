@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimBrawlClicker - Кристаллы и Ранги</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #00c6ff;
+  --bg: #0f172a;
+  --text: #ffffff;
+  --card-bg: #1e293b;
+  --input-bg: #0f172a;
+  --admin-neon: #ff00ff;
+}
+
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); user-select: none; overflow-x: hidden; }
+
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px; font-weight: 800; }
+
+.dev-btn { background: transparent; border: 1px solid var(--admin-neon); color: var(--admin-neon); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+
+.card { text-align: center; margin: 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.stat-box { display: flex; justify-content: space-around; margin-top: 20px; font-size: 1rem; font-weight: 600; background: var(--input-bg); padding: 15px; border-radius: 15px; }
+
+/* ПЛАШКА РАНГА */
+.rank-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  background: rgba(0,0,0,0.4);
+  cursor: pointer; /* Указатель, чтобы было понятно, что можно кликать */
+  transition: 0.3s;
+}
+.rank-badge:active { transform: scale(0.95); }
+
+/* КНОПКА ОБМЕНА */
+.exchange-btn {
+  background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 12px;
+  font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.exchange-btn:active { transform: scale(0.98); }
+
+.click-container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 20px; }
+.clickBtn { 
+    width: 180px; height: 180px; border-radius: 50%; 
+    background: radial-gradient(circle, var(--primary) 0%, #0072ff 100%); 
+    display: flex; align-items: center; justify-content: center; cursor: pointer; 
+    box-shadow: 0 0 30px rgba(0, 198, 255, 0.4); transition: transform 0.1s;
+}
+.clickBtn:active { transform: scale(0.92); }
+#crystalImg { width: 110px; height: 110px; object-fit: contain; }
+
+.shop-container { margin: 20px 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; }
+.shop-item { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+.shop-item button { padding: 10px 15px; border-radius: 10px; border: none; background: #fbbf24; color: #0f172a; font-weight: 800; cursor: pointer; }
+
+.admin-panel { display: none; margin: 20px 15px; padding: 20px; border: 2px dashed var(--admin-neon); border-radius: 24px; text-align: center; }
+.admin-panel button { background: transparent; border: 1px solid var(--admin-neon); color: var(--admin-neon); padding: 10px; margin: 5px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>AimBrawl <span style="color:var(--primary)">Clicker</span></div>
+  <button class="dev-btn" onclick="toggleAdmin()">DEV PANEL</button>
+</div>
+
+<div class="card">
+  <div style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px;">ВАШ РАНГ (Нажми для инфо):</div>
+  <div id="rankBadge" class="rank-badge" onclick="showRankProgress()">Без ранга</div>
+  
+  <h2 style="margin: 15px 0 5px 0;">Монеты: <span id="coinsVal" style="color:#fbbf24">0</span> 🪙</h2>
+  <h2 style="margin: 5px 0 15px 0;">Кристаллы: <span id="crystalsVal" style="color:var(--primary)">0</span> 💎</h2>
+  
+  <button class="exchange-btn" onclick="exchangeCurrency()">♻️ Обменять 1000 🪙 на 1 💎</button>
+  
+  <div class="stat-box">
+    <div>Сила: <b id="powerVal" style="color:var(--primary)">1</b></div>
+    <div>Клики: <b id="clicksVal">0</b></div>
+  </div>
+</div>
+
+<div class="click-container">
+  <div class="clickBtn" id="clickBtn">
+    <img src="crystal.png" id="crystalImg" alt="💎">
+  </div>
+</div>
+
+<div class="shop-container">
+  <h3>Прокачка силы</h3>
+  <div class="shop-item">
+    <div><b>+1 к Силе</b><br><small>Цена: 1000 🪙</small></div>
+    <button onclick="buyPower(1000, 1)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+3 к Силе</b><br><small>Цена: 2500 🪙</small></div>
+    <button onclick="buyPower(2500, 3)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+5 к Силе</b><br><small>Цена: 5000 🪙</small></div>
+    <button onclick="buyPower(5000, 5)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+10 к Силе</b><br><small>Цена: 8500 🪙</small></div>
+    <button onclick="buyPower(8500, 10)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+25 к Силе</b><br><small>Цена: 20000 🪙</small></div>
+    <button onclick="buyPower(20000, 25)">Купить</button>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <h3 style="color: var(--admin-neon); margin-top: 0;">⚡ DEVIL PANEL ⚡</h3>
+  <button onclick="addCheat(10000, 0)">+10к Монет</button>
+  <button onclick="addCheat(0, 5000)">+5к Кликов</button>
+  <button onclick="state.crystals += 100; save(); updateUI();">+100 Кристаллов</button>
+  <button onclick="resetProgress()" style="border-color: red; color: red;">Сбросить всё</button>
+  <br>
+  <button onclick="toggleAdmin()" style="border: none; color: gray; margin-top: 15px;">Закрыть панель</button>
+</div>
+
+<script>
+// Настройки рангов
+const RANKS = [
+  { name: "Без ранга", threshold: 0, color: "#94a3b8" },
+  { name: "Бронза", threshold: 1, color: "#cd7f32" },
+  { name: "Серебро", threshold: 100, color: "#e2e8f0" },
+  { name: "Золото", threshold: 1000, color: "#fbbf24" },
+  { name: "Алмаз", threshold: 5000, color: "#38bdf8" },
+  { name: "Мифик", threshold: 15000, color: "#d946ef" },
+  { name: "Легенда", threshold: 50000, color: "#f97316" },
+  { name: "Мастер", threshold: 300000, color: "#ef4444" },
+  { name: "ПРО", threshold: 1000000, color: "#22c55e" }
+];
+
+let state = {
+  coins: parseInt(localStorage.getItem("abc_coins_v2")) || 0,
+  crystals: parseInt(localStorage.getItem("abc_crystals_v2")) || 0,
+  power: parseInt(localStorage.getItem("abc_power_v2")) || 1,
+  totalClicks: parseInt(localStorage.getItem("abc_clicks_v2")) || 0
+};
+
+function save() {
+  localStorage.setItem("abc_coins_v2", state.coins);
+  localStorage.setItem("abc_crystals_v2", state.crystals);
+  localStorage.setItem("abc_power_v2", state.power);
+  localStorage.setItem("abc_clicks_v2", state.totalClicks);
+}
+
+function getCurrentRank() {
+  let current = RANKS[0];
+  for (let i = 0; i < RANKS.length; i++) {
+    if (state.totalClicks >= RANKS[i].threshold) {
+      current = RANKS[i];
+    } else {
+      break;
+    }
+  }
+  return current;
+}
+
+function showRankProgress() {
+  let nextRank = null;
+  // Ищем следующий ранг, порог которого больше текущего количества кликов
+  for (let i = 0; i < RANKS.length; i++) {
+    if (state.totalClicks < RANKS[i].threshold) {
+      nextRank = RANKS[i];
+      break;
+    }
+  }
+
+  if (nextRank) {
+    let clicksLeft = nextRank.threshold - state.totalClicks;
+    alert(`📊 ПРОГРЕСС РАНГА:\n\nТвои клики: ${state.totalClicks}\nСледующий ранг: ${nextRank.name}\nОсталось кликов: ${clicksLeft}`);
+  } else {
+    alert(`🏆 ПОЗДРАВЛЯЕМ!\n\nТвои клики: ${state.totalClicks}\nТы достиг максимального ранга "ПРО"! Выше только звезды.`);
+  }
+}
+
+function updateUI() {
+  document.getElementById("coinsVal").innerText = state.coins;
+  document.getElementById("crystalsVal").innerText = state.crystals;
+  document.getElementById("powerVal").innerText = state.power;
+  document.getElementById("clicksVal").innerText = state.totalClicks;
+  
+  const rank = getCurrentRank();
+  const badge = document.getElementById("rankBadge");
+  badge.innerText = rank.name;
+  badge.style.color = rank.color;
+  badge.style.border = `1px solid ${rank.color}`;
+  badge.style.boxShadow = `0 0 15px ${rank.color}40`;
+}
+
+// Главный клик
+document.getElementById("clickBtn").onclick = function() {
+  state.coins += state.power;
+  state.totalClicks += 1;
+  save();
+  updateUI();
+};
+
+function buyPower(price, powerIncrease) {
+  if (state.coins >= price) {
+    state.coins -= price;
+    state.power += powerIncrease;
+    save();
+    updateUI();
+  } else {
+    alert("Недостаточно монет для покупки!");
+  }
+}
+
+function exchangeCurrency() {
+  if (state.coins >= 1000) {
+    state.coins -= 1000;
+    state.crystals += 1;
+    save();
+    updateUI();
+  } else {
+    alert("Нужно минимум 1000 монет для обмена!");
+  }
+}
+
+// Управление Devil Panel
+function toggleAdmin() {
+  const panel = document.getElementById("adminPanel");
+  if (panel.style.display === "block") {
+    panel.style.display = "none";
+  } else {
+    panel.style.display = "block";
+  }
+}
+
+function addCheat(coinsAmt, clicksAmt) {
+  state.coins += coinsAmt;
+  state.totalClicks += clicksAmt;
+  save(); updateUI();
+}
+
+function resetProgress() {
+  if(confirm("Точно сбросить весь прогресс? Это действие нельзя отменить!")) {
+    state = { coins: 0, crystals: 0, power: 1, totalClicks: 0 };
+    save(); updateUI();
+  }
+}
+
+// Запуск
+updateUI();
+</script>
+</body>
+</html>
