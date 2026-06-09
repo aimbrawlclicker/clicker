@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimBrawlClicker - Стабильная база</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #00c6ff;
+  --bg: #0f172a;
+  --text: #ffffff;
+  --card-bg: #1e293b;
+  --input-bg: #0f172a;
+  --input-text: #ffffff;
+  --admin-neon: #ff00ff;
+}
+
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); user-select: none; overflow-x: hidden; }
+
+.header { display: flex; justify-content: space-between; padding: 20px; font-weight: 800; }
+
+.card { text-align: center; margin: 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.stat-box { display: flex; justify-content: space-around; margin-top: 15px; font-size: 1rem; font-weight: 600; }
+
+.click-container { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 30px; }
+.clickBtn { 
+    width: 180px; height: 180px; border-radius: 50%; 
+    background: radial-gradient(circle, var(--primary) 0%, #0072ff 100%); 
+    display: flex; align-items: center; justify-content: center; cursor: pointer; 
+    box-shadow: 0 0 30px rgba(0, 198, 255, 0.4); transition: transform 0.1s;
+}
+.clickBtn:active { transform: scale(0.92); }
+#crystalImg { width: 110px; height: 110px; object-fit: contain; }
+
+.shop-container { margin: 20px 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; }
+.shop-item { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px; }
+.shop-item button { padding: 10px 15px; border-radius: 10px; border: none; background: #fbbf24; color: #0f172a; font-weight: 800; cursor: pointer; }
+
+.admin-panel { display: none; margin: 20px 15px; padding: 20px; border: 2px dashed var(--admin-neon); border-radius: 24px; text-align: center; }
+.admin-panel button { background: transparent; border: 1px solid var(--admin-neon); color: var(--admin-neon); padding: 10px; margin: 5px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>AimBrawl <span style="color:var(--primary)">Clicker</span></div>
+  <div style="font-size: 14px; opacity: 0.5;" onclick="toggleAdmin()">v0.7 (Stable)</div>
+</div>
+
+<div class="card">
+  <h2 style="margin: 5px 0;">Монеты: <span id="coinsVal" style="color:#fbbf24">0</span> 🪙</h2>
+  <div class="stat-box">
+    <div>Сила клика: <b id="powerVal" style="color:var(--primary)">1</b></div>
+    <div>Всего кликов: <b id="clicksVal">0</b></div>
+  </div>
+</div>
+
+<div class="click-container">
+  <div class="clickBtn" id="clickBtn">
+    <img src="crystal.png" id="crystalImg" alt="💎">
+  </div>
+</div>
+
+<div class="shop-container">
+  <h3>Прокачка силы</h3>
+  <div class="shop-item">
+    <div><b>+1 к Силе</b><br><small>Цена: 100 🪙</small></div>
+    <button onclick="buyPower(100, 1)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+5 к Силе</b><br><small>Цена: 500 🪙</small></div>
+    <button onclick="buyPower(500, 5)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+25 к Силе</b><br><small>Цена: 2500 🪙</small></div>
+    <button onclick="buyPower(2500, 25)">Купить</button>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <h3 style="color: var(--admin-neon); margin-top: 0;">DEV PANEL</h3>
+  <button onclick="addCheat(100000)">+100,000 Монет</button>
+  <button onclick="resetProgress()">Сбросить прогресс</button>
+</div>
+
+<script>
+// Простая и надёжная логика без лишних усложнений
+let state = {
+  coins: parseInt(localStorage.getItem("abc_coins")) || 0,
+  power: parseInt(localStorage.getItem("abc_power")) || 1,
+  totalClicks: parseInt(localStorage.getItem("abc_clicks")) || 0
+};
+
+function save() {
+  localStorage.setItem("abc_coins", state.coins);
+  localStorage.setItem("abc_power", state.power);
+  localStorage.setItem("abc_clicks", state.totalClicks);
+}
+
+function updateUI() {
+  document.getElementById("coinsVal").innerText = state.coins;
+  document.getElementById("powerVal").innerText = state.power;
+  document.getElementById("clicksVal").innerText = state.totalClicks;
+}
+
+// Главный клик - работает безотказно
+document.getElementById("clickBtn").onclick = function() {
+  state.coins += state.power;
+  state.totalClicks += 1;
+  save();
+  updateUI();
+};
+
+function buyPower(price, powerIncrease) {
+  if (state.coins >= price) {
+    state.coins -= price;
+    state.power += powerIncrease;
+    save();
+    updateUI();
+  } else {
+    alert("Недостаточно монет!");
+  }
+}
+
+// Админка (открывается кликом по версии в правом верхнем углу)
+let adminClicks = 0;
+function toggleAdmin() {
+  adminClicks++;
+  if (adminClicks >= 5) {
+    document.getElementById("adminPanel").style.display = "block";
+  }
+}
+
+function addCheat(amount) {
+  state.coins += amount;
+  save(); updateUI();
+}
+
+function resetProgress() {
+  if(confirm("Точно сбросить весь прогресс?")) {
+    state = { coins: 0, power: 1, totalClicks: 0 };
+    save(); updateUI();
+  }
+}
+
+// Инициализация при загрузке
+updateUI();
+</script>
+</body>
+</html>
