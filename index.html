@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimBrawlClicker v0.6.7</title>
+<style>
+  body { 
+    background: #0f172a; 
+    color: #ffffff; 
+    font-family: sans-serif; 
+    text-align: center; 
+    margin-top: 50px; 
+    user-select: none; 
+  }
+  #coin { 
+    font-size: 120px; 
+    cursor: pointer; 
+    transition: transform 0.1s; 
+    display: inline-block; 
+    margin: 40px 0;
+    filter: drop-shadow(0 0 20px rgba(234, 179, 8, 0.5));
+  }
+  #coin:active { 
+    transform: scale(0.9); 
+  }
+  .shop { 
+    margin-top: 30px; 
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  button { 
+    padding: 12px 24px; 
+    font-size: 16px; 
+    font-weight: bold;
+    cursor: pointer; 
+    margin: 5px; 
+    border-radius: 10px;
+    border: none;
+    background: #00c6ff;
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+  <h1>AimBrawlClicker <span style="opacity: 0.5; font-size: 16px;">v0.6.7</span></h1>
+  
+  <h2>Монеты: <span id="balance" style="color: #eab308;">0</span></h2>
+  <h3>Сила клика: <span id="power">1</span></h3>
+
+  <div id="coin">🪙</div>
+
+  <br>
+
+  <div class="shop">
+    <h3>Магазин</h3>
+    <button id="buyPower">Купить +1 Силу (Цена: <span id="price">50</span> 🪙)</button>
+    <br><br>
+    <button id="resetBtn" style="background: #f43f5e; font-size: 12px;">Сбросить прогресс</button>
+  </div>
+
+  <script>
+    // Используем новые ключи, чтобы старые багнутые сохранения не мешали
+    let coins = parseInt(localStorage.getItem('abc_v6_coins')) || 0;
+    let power = parseInt(localStorage.getItem('abc_v6_power')) || 1;
+    let price = parseInt(localStorage.getItem('abc_v6_price')) || 50;
+
+    const balanceEl = document.getElementById('balance');
+    const powerEl = document.getElementById('power');
+    const priceEl = document.getElementById('price');
+
+    function updateUI() {
+      balanceEl.innerText = coins;
+      powerEl.innerText = power;
+      priceEl.innerText = price;
+    }
+
+    document.getElementById('coin').onclick = function() {
+      coins += power;
+      localStorage.setItem('abc_v6_coins', coins);
+      updateUI();
+    };
+
+    document.getElementById('buyPower').onclick = function() {
+      if (coins >= price) {
+        coins -= price;
+        power += 1;
+        price = Math.floor(price * 1.5);
+        
+        localStorage.setItem('abc_v6_coins', coins);
+        localStorage.setItem('abc_v6_power', power);
+        localStorage.setItem('abc_v6_price', price);
+        
+        updateUI();
+      } else {
+        alert('Недостаточно монет!');
+      }
+    };
+
+    document.getElementById('resetBtn').onclick = function() {
+      localStorage.removeItem('abc_v6_coins');
+      localStorage.removeItem('abc_v6_power');
+      localStorage.removeItem('abc_v6_price');
+      location.reload();
+    };
+
+    // Запуск при старте
+    updateUI();
+  </script>
+</body>
+</html>
