@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TEST SITE</title>
+</head>
+<body>
+
+    <h1 id="status">Тестовая страница</h1>
+    <button id="testBtn" style="padding: 20px; font-size: 20px;">НАЖМИ МЕНЯ</button>
+
+    <script>
+        console.log("Скрипт загружен!");
+        document.getElementById("testBtn").onclick = function() {
+            alert("КНОПКА РАБОТАЕТ!");
+            document.getElementById("status").innerText = "Скрипт работает!";
+        };
+    </script>
+
+</body>
+</html>
