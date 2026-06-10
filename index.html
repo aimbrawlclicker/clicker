@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimBrawlClicker v0.8.9</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #00c6ff;
+  --bg: #0f172a;
+  --text: #ffffff;
+  --card-bg: #1e293b;
+  --input-bg: #0f172a;
+  --admin-neon: #ff00ff;
+  --super-gold: #fbbf24;
+}
+
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); user-select: none; overflow-x: hidden; }
+
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px; font-weight: 800; }
+
+.dev-btn { background: transparent; border: 1px solid var(--admin-neon); color: var(--admin-neon); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; }
+.dev-btn:active { transform: scale(0.9); }
+
+.card { text-align: center; margin: 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.stat-box { display: flex; justify-content: space-around; margin-top: 20px; font-size: 1rem; font-weight: 600; background: var(--input-bg); padding: 15px; border-radius: 15px; }
+
+/* ПЛАШКА РАНГА */
+.rank-badge { display: inline-block; padding: 8px 20px; border-radius: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; background: rgba(0,0,0,0.4); cursor: pointer; transition: 0.3s; }
+.rank-badge:active { transform: scale(0.95); }
+
+/* МОДАЛЬНЫЕ ОКНА */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
+.modal-content { background: var(--card-bg); padding: 20px; border-radius: 20px; width: 85%; max-width: 400px; text-align: left; border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(0, 198, 255, 0.2); }
+.modal-content h3 { text-align: center; margin-top: 0; margin-bottom: 15px; }
+.modal-input { width: 90%; padding: 10px; margin: 15px auto 5px auto; display: block; border-radius: 8px; border: none; background: var(--input-bg); color: white; text-align: center; font-size: 1rem; font-family: inherit; }
+.rank-list-item { display: flex; justify-content: space-between; padding: 10px 15px; margin: 8px 0; border-radius: 10px; background: var(--input-bg); font-weight: bold; }
+.close-btn { background: #f43f5e; color: white; border: none; padding: 12px; width: 100%; border-radius: 12px; margin-top: 15px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.close-btn:active { transform: scale(0.95); }
+.confirm-btn { background: #10b981; color: white; border: none; padding: 12px; width: 100%; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.confirm-btn:active { transform: scale(0.95); }
+
+/* КНОПКИ */
+.action-btn { color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; font-size: 0.9rem; transition: 0.2s; }
+.action-btn:active:not(:disabled) { transform: scale(0.98); }
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-exchange { background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+.btn-super { background: linear-gradient(45deg, #f59e0b, #d97706); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); margin-top: 15px; }
+.btn-withdraw { background: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4); margin-top: 15px; }
+
+/* СТАРРДРОПЫ */
+.drop-box { border: 2px solid var(--super-gold); padding: 15px; border-radius: 15px; cursor: pointer; margin-top: 15px; background: rgba(251, 191, 36, 0.1); transition: 0.3s; }
+.drop-box:active { transform: scale(0.95); }
+
+.click-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px; }
+.clickBtn { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, var(--primary) 0%, #0072ff 100%); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 30px rgba(0, 198, 255, 0.4); transition: transform 0.1s, opacity 0.3s; }
+.clickBtn:active { transform: scale(0.92); }
+#crystalImg { width: 110px; height: 110px; object-fit: contain; }
+
+#mainTimer { color: #f43f5e; font-weight: bold; height: 20px; font-size: 0.9rem; }
+
+.shop-container { margin: 20px 15px; padding: 20px; background: var(--card-bg); border-radius: 24px; }
+.shop-item { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+.shop-item button { padding: 10px 15px; border-radius: 10px; border: none; background: #fbbf24; color: #0f172a; font-weight: 800; cursor: pointer; }
+
+.admin-panel { display: none; margin: 20px 15px; padding: 20px; border: 2px dashed var(--admin-neon); border-radius: 24px; text-align: center; }
+.admin-panel button { background: transparent; border: 1px solid var(--admin-neon); color: var(--admin-neon); padding: 10px; margin: 5px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>AimBrawl <span style="color:var(--primary)">Clicker</span> <span style="font-size:12px;opacity:0.5">v0.8.9</span></div>
+  <button class="dev-btn" onclick="toggleAdmin()">DEV PANEL</button>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <h3 style="color: var(--admin-neon); margin-top: 0;">⚡ DEVIL PANEL ⚡</h3>
+  <button onclick="addCheat(10000, 0)">+10к Монет</button>
+  <button onclick="addCheat(0, 1000)">+1000 Кликов</button>
+  <button onclick="addCheat(0, 5000)">+5к Кликов</button>
+  <button onclick="state.crystals += 100; save(); updateUI();">+100 Кристаллов</button>
+  <button onclick="state.dailyDrops += 5; save(); updateUI();">+5 Старрдропов</button>
+  <button onclick="state.superCooldownUntil = 0; save(); updateUI();">Убрать КД Супер-клика</button>
+  <button onclick="state.cooldownUntil = 0; save(); updateUI();">Убрать КД Кликов</button>
+  <button onclick="resetProgress()" style="border-color: red; color: red;">Сбросить всё (Вайп)</button>
+</div>
+
+<div class="card">
+  <div style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px;">ВАШ РАНГ:</div>
+  <div id="rankBadge" class="rank-badge" onclick="showRankProgress()">Без ранга</div>
+  <div style="font-size: 0.8rem; margin-top: 2px; opacity: 0.8;">ID: <span id="idDisplay" style="color:var(--primary); font-weight: bold;">Не задан</span></div>
+  
+  <h2 style="margin: 15px 0 5px 0;">Монеты: <span id="coinsVal" style="color:#fbbf24">0</span> 🪙</h2>
+  <h2 style="margin: 5px 0 15px 0;">Кристаллы: <span id="crystalsVal" style="color:var(--primary)">0</span> 💎</h2>
+  
+  <button class="action-btn btn-exchange" onclick="exchangeCurrency()">♻️ Обменять 1000 🪙 на 1 💎</button>
+  <button class="action-btn btn-super" id="superBtn" onclick="doSuperClick()">СУПЕР КЛИК 💎 (Загрузка...)</button>
+  <button class="action-btn btn-withdraw" onclick="openWithdrawModal()">💸 ВЫВОД СРЕДСТВ</button>
+  
+  <div id="dropSection" class="drop-box" onclick="openDrop()">
+    <h3>⭐ Старрдропы: <span id="dropCount">0</span>/5</h3>
+    <p id="dropHintText" style="font-size: 0.8rem; margin: 0; opacity: 0.8;">Кликай, чтобы копить (1 дроп = 100 кликов)</p>
+  </div>
+
+  <div class="stat-box">
+    <div>Сила: <b id="powerVal" style="color:var(--primary)">1</b></div>
+    <div>Задержка: <b id="delayVal">1с</b></div>
+    <div>Клики: <b id="clicksVal">0</b></div>
+  </div>
+</div>
+
+<div class="click-container">
+  <div id="mainTimer"></div>
+  <div class="clickBtn" id="clickBtn">
+    <div style="font-size: 60px;">💎</div>
+  </div>
+</div>
+
+<!-- Модальное окно Вывода -->
+<div class="modal-overlay" id="withdrawModal">
+  <div class="modal-content" style="text-align: center;">
+    <h3>💸 Вывод средств</h3>
+    <p style="margin: 10px 0;">Ваш баланс: <b id="withdrawBalance" style="color: var(--primary);">0</b> 💎</p>
+    <p style="font-size: 0.85rem; opacity: 0.7; margin: 0;">Вы можете изменить свой ID в любой момент:</p>
+    <input type="text" id="idInput" class="modal-input" placeholder="Введите ваш ID">
+    <button class="confirm-btn" onclick="processWithdraw()">ПОДТВЕРДИТЬ ВЫВОД (Мин. 30 💎)</button>
+    <button class="close-btn" onclick="closeWithdrawModal()">ОТМЕНА</button>
+  </div>
+</div>
+
+<!-- Модальное окно для таблицы рангов -->
+<div class="modal-overlay" id="rankModal">
+  <div class="modal-content">
+    <h3>🏆 Таблица Рангов 🏆</h3>
+    <div id="ranksListContainer"></div>
+    <button class="close-btn" onclick="closeRankModal()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<div class="shop-container">
+  <h3>Улучшения Супер-Клика</h3>
+  <div class="shop-item" style="border-left-color: #fbbf24;">
+    <div id="superShopText"><b>Сократить КД (6ч)</b><br><small>Цена: 5000 🪙</small></div>
+    <button id="superShopBtn" onclick="buySuperUpgrade()">Купить</button>
+  </div>
+
+  <h3 style="margin-top: 25px;">Прокачка силы</h3>
+  <div class="shop-item">
+    <div><b>+1 к Силе</b><br><small>Цена: 1000 🪙 | КД: 3 сек</small></div>
+    <button onclick="buyPower(1000, 1, 3000)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+3 к Силе</b><br><small>Цена: 2500 🪙 | КД: 15 сек</small></div>
+    <button onclick="buyPower(2500, 3, 15000)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+5 к Силе</b><br><small>Цена: 5000 🪙 | КД: 1 мин</small></div>
+    <button onclick="buyPower(5000, 5, 60000)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+10 к Силе</b><br><small>Цена: 8500 🪙 | КД: 5 мин</small></div>
+    <button onclick="buyPower(8500, 10, 300000)">Купить</button>
+  </div>
+  <div class="shop-item">
+    <div><b>+25 к Силе</b><br><small>Цена: 20000 🪙 | КД: 30 мин</small></div>
+    <button onclick="buyPower(20000, 25, 1800000)">Купить</button>
+  </div>
+</div>
+
+<script>
+const RANKS = [
+  { name: "Без ранга", threshold: 0, color: "#94a3b8" },
+  { name: "Бронза", threshold: 1, color: "#cd7f32" },
+  { name: "Серебро", threshold: 100, color: "#c0c0c0" },
+  { name: "Золото", threshold: 1000, color: "#ffd700" },
+  { name: "Алмаз", threshold: 5000, color: "#00bfff" },
+  { name: "Мифик", threshold: 15000, color: "#8a2be2" },
+  { name: "Легенда", threshold: 50000, color: "#ff0000" },
+  { name: "Мастер", threshold: 300000, color: "#ffa500" },
+  { name: "ПРО", threshold: 1000000, color: "#39ff14" }
+];
+
+let state = {
+  coins: parseInt(localStorage.getItem("abc_coins_v4")) || 0,
+  crystals: parseInt(localStorage.getItem("abc_crystals_v4")) || 0,
+  power: parseInt(localStorage.getItem("abc_power_v4")) || 1,
+  totalClicks: parseInt(localStorage.getItem("abc_clicks_v4")) || 0,
+  currentDelay: parseInt(localStorage.getItem("abc_delay_v4")) || 1000,
+  cooldownUntil: parseInt(localStorage.getItem("abc_cu_v4")) || 0,
+  superCooldownUntil: parseInt(localStorage.getItem("abc_su_v4")) || 0,
+  dailyDrops: parseInt(localStorage.getItem("abc_drops_v4")) || 0,
+  totalClicksToday: parseInt(localStorage.getItem("abc_clicks_today_v4")) || 0,
+  superLevel: parseInt(localStorage.getItem("abc_superlvl_v4")) || 0,
+  lastDropDate: localStorage.getItem("abc_date_v4") || new Date().toDateString(),
+  playerID: localStorage.getItem("abc_playerID") || ""
+};
+
+let today = new Date().toDateString();
+if (state.lastDropDate !== today) {
+    state.dailyDrops = 0;
+    state.totalClicksToday = 0;
+    state.lastDropDate = today;
+}
+
+function save() {
+  localStorage.setItem("abc_coins_v4", state.coins);
+  localStorage.setItem("abc_crystals_v4", state.crystals);
+  localStorage.setItem("abc_power_v4", state.power);
+  localStorage.setItem("abc_clicks_v4", state.totalClicks);
+  localStorage.setItem("abc_delay_v4", state.currentDelay);
+  localStorage.setItem("abc_cu_v4", state.cooldownUntil);
+  localStorage.setItem("abc_su_v4", state.superCooldownUntil);
+  localStorage.setItem("abc_drops_v4", state.dailyDrops);
+  localStorage.setItem("abc_clicks_today_v4", state.totalClicksToday);
+  localStorage.setItem("abc_superlvl_v4", state.superLevel);
+  localStorage.setItem("abc_date_v4", state.lastDropDate);
+  localStorage.setItem("abc_playerID", state.playerID);
+}
+
+function formatDelay(ms) {
+    if (ms < 60000) return (ms/1000) + "с";
+    return (ms/60000) + "м";
+}
+
+function getCurrentRank() {
+  let current = RANKS[0];
+  for (let i = 0; i < RANKS.length; i++) {
+    if (state.totalClicks >= RANKS[i].threshold) current = RANKS[i];
+    else break;
+  }
+  return current;
+}
+
+function showRankProgress() {
+  let container = document.getElementById("ranksListContainer");
+  container.innerHTML = "";
+  
+  RANKS.forEach(r => {
+    let isReached = state.totalClicks >= r.threshold;
+    let div = document.createElement("div");
+    div.className = "rank-list-item";
+    div.style.borderLeft = `5px solid ${r.color}`;
+    div.innerHTML = `
+        <span style="color: ${r.color}; text-shadow: 0 0 5px ${r.color}40;">${r.name}</span>
+        <span style="opacity: ${isReached ? 1 : 0.6}">${isReached ? "✅ Достигнут" : r.threshold + " кликов"}</span>
+    `;
+    container.appendChild(div);
+  });
+  
+  document.getElementById("rankModal").style.display = "flex";
+}
+
+function closeRankModal() {
+  document.getElementById("rankModal").style.display = "none";
+}
+
+/* ФУНКЦИИ ВЫВОДА СРЕДСТВ */
+function openWithdrawModal() {
+  document.getElementById("withdrawBalance").innerText = state.crystals;
+  document.getElementById("idInput").value = state.playerID;
+  document.getElementById("withdrawModal").style.display = "flex";
+}
+
+function closeWithdrawModal() {
+  document.getElementById("withdrawModal").style.display = "none";
+}
+
+function processWithdraw() {
+  let enteredID = document.getElementById("idInput").value.trim();
+  if (!enteredID) return alert("Пожалуйста, введите ваш ID для сохранения!");
+  
+  // Сохраняем ID (даже если вывод не удался, чтобы он остался в системе)
+  state.playerID = enteredID;
+  save();
+  updateUI();
+  
+  // Проверка лимита кристаллов
+  if (state.crystals < 30) {
+    return alert("Минимальный вывод — от 30 кристаллов! У вас пока только " + state.crystals + " 💎");
+  }
+  
+  // Окно подтверждения перед редиректом
+  if (confirm("Вы хотите вывести " + state.crystals + " кристаллов на ID: " + enteredID + "?")) {
+    window.open("https://docs.google.com/forms/d/e/1FAIpQLSfURM7IP9IwRpAjlGiF9ujEgQPfOnWj9Avcz3ys3uXAV0qO5Q/viewform?usp=header", "_blank");
+    closeWithdrawModal();
+  }
+}
+
+function getDropThreshold(power) {
+  if (power >= 26) return 4;
+  if (power >= 11) return 10;
+  if (power >= 6) return 20;
+  if (power >= 4) return 30;
+  if (power >= 2) return 75;
+  return 100;
+}
+
+function updateUI() {
+  document.getElementById("coinsVal").innerText = Math.floor(state.coins);
+  document.getElementById("crystalsVal").innerText = state.crystals;
+  document.getElementById("idDisplay").innerText = state.playerID || "Не задан";
+  document.getElementById("powerVal").innerText = state.power;
+  document.getElementById("clicksVal").innerText = state.totalClicks;
+  document.getElementById("delayVal").innerText = formatDelay(state.currentDelay);
+  document.getElementById("dropCount").innerText = state.dailyDrops;
+  
+  let currentThreshold = getDropThreshold(state.power);
+  document.getElementById("dropHintText").innerText = `Кликай, чтобы копить (1 дроп = ${currentThreshold} кликов)`;
+  
+  const rank = getCurrentRank();
+  const badge = document.getElementById("rankBadge");
+  badge.innerText = rank.name;
+  badge.style.color = rank.color;
+  badge.style.border = `1px solid ${rank.color}`;
+  badge.style.boxShadow = `0 0 15px ${rank.color}40`;
+  
+  let superShopText = document.getElementById("superShopText");
+  let superShopBtn = document.getElementById("superShopBtn");
+  
+  if (state.superLevel === 0) {
+      superShopText.innerHTML = "<b>Этап 1: КД 6 часов</b><br><small>Цена: 5000 🪙</small>";
+      superShopBtn.style.display = "block";
+  } else if (state.superLevel === 1) {
+      superShopText.innerHTML = "<b>Этап 2: КД 3 часа</b><br><small>Цена: 25000 🪙</small>";
+      superShopBtn.style.display = "block";
+  } else if (state.superLevel === 2) {
+      superShopText.innerHTML = "<b>Этап 3: КД 1 час</b><br><small>Цена: 100000 🪙</small>";
+      superShopBtn.style.display = "block";
+  } else {
+      superShopText.innerHTML = "<b style='color:#10b981'>СУПЕР-КЛИК ПРОКАЧАН</b><br><small>Макс. скорость (1 час)</small>";
+      superShopBtn.style.display = "none";
+  }
+}
+
+function buySuperUpgrade() {
+  if (state.superLevel === 0 && state.coins >= 5000) {
+      state.coins -= 5000; state.superLevel = 1;
+  } else if (state.superLevel === 1 && state.coins >= 25000) {
+      state.coins -= 25000; state.superLevel = 2;
+  } else if (state.superLevel === 2 && state.coins >= 100000) {
+      state.coins -= 100000; state.superLevel = 3;
+  } else {
+      return alert("Недостаточно монет для покупки этапа!");
+  }
+  save(); updateUI();
+}
+
+document.getElementById("clickBtn").onclick = function() {
+  if (Date.now() < state.cooldownUntil) return;
+
+  state.coins += state.power;
+  state.totalClicks += 1;
+  state.totalClicksToday += 1;
+  state.cooldownUntil = Date.now() + state.currentDelay;
+  
+  let currentThreshold = getDropThreshold(state.power);
+  
+  if (state.totalClicksToday >= currentThreshold && state.dailyDrops < 5) {
+      state.dailyDrops += 1;
+      state.totalClicksToday -= currentThreshold;
+      alert("🎉 Вы получили Старрдроп!");
+  }
+  
+  save(); updateUI();
+};
+
+function openDrop() {
+    if (state.dailyDrops <= 0) return alert("Нет доступных Старрдропов! Кликай, чтобы получить.");
+    
+    const roll = Math.random() * 100;
+    let rewardText = "";
+    
+    if (roll < 0.1) { 
+        const sub = Math.random();
+        if (sub < 0.70) { state.coins += 100000; rewardText = "УЛЬТРА редкость!\nНаграда: 100,000 монет!"; }
+        else if (sub < 0.95) { state.power += 25; rewardText = "УЛЬТРА редкость!\nНаграда: +25 силы кликов!"; }
+        else { state.crystals += 150; rewardText = "УЛЬТРА редкость!\nНаграда: 150 Кристаллов!"; }
+    } else if (roll < 2.1) { 
+        const sub = Math.random();
+        if (sub < 0.79) { let winCoins = Math.floor(Math.random()*(25000-5000+1))+5000; state.coins += winCoins; rewardText = `Легендарный!\nНаграда: ${winCoins} монет!`; }
+        else if (sub < 0.98) { state.power += 10; rewardText = "Легендарный!\nНаграда: +10 силы кликов!"; }
+        else { state.crystals += 80; rewardText = "Легендарный!\nНаграда: 80 Кристаллов!"; }
+    } else if (roll < 11.1) { 
+        const sub = Math.random();
+        if (sub < 0.84) { let winCoins = Math.floor(Math.random()*(3000-1000+1))+1000; state.coins += winCoins; rewardText = `Мифический!\nНаграда: ${winCoins} монет!`; }
+        else if (sub < 0.99) { state.power += 5; rewardText = "Мифический!\nНаграда: +5 силы кликов!"; }
+        else { state.crystals += 30; rewardText = "Мифический!\nНаграда: 30 Кристаллов!"; }
+    } else if (roll < 25.1) { 
+        let winCoins = Math.floor(Math.random()*(100-200+1))+200; state.coins += winCoins; rewardText = `Эпический!\nНаграда: ${winCoins} монет!`;
+    } else if (roll < 50.1) { 
+        let winCoins = Math.floor(Math.random()*(100-25+1))+25; state.coins += winCoins; rewardText = `Сверхредкий!\nНаграда: ${winCoins} монет!`;
+    } else { 
+        let winCoins = Math.floor(Math.random()*(20-5+1))+5; state.coins += winCoins; rewardText = `Редкий!\nНаграда: ${winCoins} монет!`;
+    }
+    
+    state.dailyDrops--;
+    alert(rewardText);
+    save(); updateUI();
+}
+
+function doSuperClick() {
+  if (Date.now() < state.superCooldownUntil) return;
+  state.crystals += 1;
+  
+  let baseCdMs = 12 * 60 * 60 * 1000; 
+  if (state.superLevel === 1) baseCdMs = 6 * 60 * 60 * 1000;
+  if (state.superLevel === 2) baseCdMs = 3 * 60 * 60 * 1000;
+  if (state.superLevel === 3) baseCdMs = 1 * 60 * 60 * 1000;
+  
+  state.superCooldownUntil = Date.now() + baseCdMs;
+  save(); updateUI();
+}
+
+function buyPower(price, powerIncrease, newDelay
